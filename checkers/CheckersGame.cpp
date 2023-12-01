@@ -26,13 +26,13 @@ bool CheckersGame::setGameType(int type)
     if(type == RUSSIAN)
     {
 		this->type = type;
-        squaresCountWidthHeight = 8; checkersRowsCount = 3;
+        squaresCountOnDiagonal = 8; checkersRowsCount = 3;
 		return true;
 	}
     if(type == INTERNATIONAL)
     {
 		this->type = type;
-        squaresCountWidthHeight = 10; checkersRowsCount = 4;
+        squaresCountOnDiagonal = 10; checkersRowsCount = 4;
 		return true;
 	}
 	return false;
@@ -50,47 +50,52 @@ void CheckersGame::startNewGame(int chosenComputerColor)
     computerColor = chosenComputerColor;
     if(chosenComputerColor == WHITE) humanColor = BLACK;
     else humanColor = WHITE;
-    first = new CheckersState(squaresCountWidthHeight);
-	created++;
+    first = new CheckersState(squaresCountOnDiagonal);
+    created++;
 
 
-    for(int i=0; i<squaresCountWidthHeight; i++)
+    for(int i=0; i<squaresCountOnDiagonal; i++)
     {
         for(int j=0; j<checkersRowsCount; j++)
         {
-			if(i%2 == j%2)
-				first->at(i,j) = WHITE;
-		}
-        for(int j=squaresCountWidthHeight-checkersRowsCount; j<squaresCountWidthHeight; j++)
+            if(i%2 == j%2)
+                first->at(i,j) = WHITE;
+        }
+        for(int j=squaresCountOnDiagonal-checkersRowsCount; j<squaresCountOnDiagonal; j++)
         {
             if(i%2 == j%2)
                 first->at(i,j) = BLACK;
         }
-	}
+    }
 
-	if(current)
-		delete current;
-	current = new CheckersState(first);
-	historyStates.push_back(first);
-	created++;
-	click = 0;
-	historynum = 0;
-	ix[0] = -1; ix[1] = 1; ix[2] = -1; ix[3] = 1;
-	jx[0] = 1; jx[1] = 1; jx[2] = -1; jx[3] = -1;
-	gamerunning = true;
+    if(current)
+        delete current;
+    current = new CheckersState(first);
+    historyStates.push_back(first);
+    created++;
+    click = 0;
+
+    historyNum = 0;
+
+    ix[0] = -1; ix[1] = 1; ix[2] = -1; ix[3] = 1;
+    jx[0] = 1; jx[1] = 1; jx[2] = -1; jx[3] = -1;
+
+    gameRunning = true;
+
     if(computerColor == WHITE) go();
     else
     {
-		emit stateChanged(current);
+        emit stateChanged(current);
         findAndProcessPossibleMoves(current,humanColor);
-	}
+    }
 }
 
 void CheckersGame::endGame()
 {
 	cleared = 0;
 	created = 0;
-	gamerunning = false;
+
+    gameRunning = false;
     if(current)
     {
 		clearTree(current, true, true);
@@ -111,9 +116,9 @@ void CheckersGame::findAndProcessPossibleMoves(CheckersState * state, uint8 colo
     /*iterating over all the squares on the game board.
      *Inside this loop, it checks if the square is accessible
      *for a move for the current color of pieces*/
-    for(unsigned i=0; i<squaresCountWidthHeight; i++)
+    for(unsigned i=0; i<squaresCountOnDiagonal; i++)
     {
-        for(unsigned j=0; j<squaresCountWidthHeight; j++)
+        for(unsigned j=0; j<squaresCountOnDiagonal; j++)
         {
             if(i%2 == j%2 && state->color(i,j) == color)
             {
@@ -186,29 +191,42 @@ int CheckersGame::countAvailableMoves(CheckersState * state, int i, int j)
 {
     uint8 color = state->color(i,j);
     int moves = 0;
-    if(!color)
-        return 0;
+
+    if(!color) return 0;
+
     int startDirectionIndex, endDirectionIndex;
-    int stepIndex= 1;
+    int stepIndex = 1;
 
-    if(color == WHITE) startDirectionIndex = 0; endDirectionIndex = 1;
-
-    if(color == BLACK) startDirectionIndex = 2; endDirectionIndex = 3;
-    if( state->isQueen(i,j) ) {
-        startDirectionIndex = 0; endDirectionIndex = 3; stepIndex = squaresCountWidthHeight;
-    }
-    for(char k=startDirectionIndex; k<=endDirectionIndex; k++)
+    if(color == WHITE)
     {
-        for(char pk=1; pk <= stepIndex; pk++)
+        startDirectionIndex = 0;
+        endDirectionIndex = 1;
+    }
+    else
+    {
+        startDirectionIndex = 2;
+        endDirectionIndex = 3;
+    }
+
+    if( state->isQueen(i,j) )
+    {
+        startDirectionIndex = 0;
+        endDirectionIndex = 3;
+        stepIndex = squaresCountOnDiagonal;
+    }
+    for(char k = startDirectionIndex; k<=endDirectionIndex; k++)
+    {
+        for(char pk = 1; pk <= stepIndex; pk++)
         {
             char xi = i + pk*ix[(int)k];
             char xj = j + pk*jx[(int)k];
-            if( !isCoordinateValid(xi) || !isCoordinateValid(xj) )
-                break;
+            if( !isCoordinateValid(xi) || !isCoordinateValid(xj) ) break;
+
             if(state->isNull(xi,xj)) moves ++;
             else break;
         }
     }
+
     bool captureflag;
     for(int k=0; k<=3; k++)
     {
@@ -265,7 +283,7 @@ int CheckersGame::searchMove(CheckersState *state, int i, int j, std::vector <Po
     }
     if( state->isQueen(i,j) )
     {
-        sidx = 0; eidx = 3; pidx = squaresCountWidthHeight;
+        sidx = 0; eidx = 3; pidx = squaresCountOnDiagonal;
     }
 
     for(char k=sidx; k<=eidx && !captureFound; k++) {
@@ -278,7 +296,7 @@ int CheckersGame::searchMove(CheckersState *state, int i, int j, std::vector <Po
             {
                 tmp_vp.clear();
                 tmp_vp.push_back(Point(i,j,MOVEDFROM));
-                if ( (color==BLACK && xj==0 && !isking) || (color==WHITE && xj==squaresCountWidthHeight-1 && !isking)  ) {
+                if ( (color==BLACK && xj==0 && !isking) || (color==WHITE && xj==squaresCountOnDiagonal-1 && !isking)  ) {
                     tmp_vp.push_back(Point(xi,xj,TOKING));
                 } else {
                     tmp_vp.push_back(Point(xi,xj,MOVEDTO));
@@ -303,7 +321,8 @@ int CheckersGame::searchMove(CheckersState *state, int i, int j, std::vector <Po
             if( state->color(xi,xj) == color || state->at(xi,xj) == MARKDELETED )
                 break;
             // если не найдена сбитая фишка и в текущей позиции другая по цвету фишка
-            if( !captureflag && state->color(xi, xj)!= color ) {
+            if( !captureflag && state->color(xi, xj)!= color )
+            {
                 captureflag = true;
                 cp.x = xi; cp.y = xj; cp.type = MARKDELETED;
                 continue;
@@ -321,7 +340,7 @@ int CheckersGame::searchMove(CheckersState *state, int i, int j, std::vector <Po
                 tmp_vp.clear();
                 tmp_vp.push_back(Point(i,j,MOVEDFROM));
                 tmp_vp.push_back(cp);
-                if ( (color==BLACK && xj==0 && !isking) || (color==WHITE && xj==squaresCountWidthHeight-1 && !isking)  ) // 检查
+                if ( (color==BLACK && xj==0 && !isking) || (color==WHITE && xj==squaresCountOnDiagonal-1 && !isking)  ) // 检查
                     tmp_vp.push_back(Point(xi,xj,TOKING));
                 else
                     tmp_vp.push_back(Point(xi,xj,MOVEDTO));
@@ -390,11 +409,14 @@ void CheckersGame::go()
 
 int CheckersGame::goRecursive(CheckersState *state, int level, int alpha, int beta)
 {
-	bool max = true;
-    if(computerColor == WHITE)
-		max = false;
+    bool max;
+    if(computerColor == WHITE) max = false;
+    else max = true;
+
+
     uint8 color = humanColor;
-	if(level%2) {
+    if(level % 2)
+    {
         color = computerColor;
 		max = !max;
 	}
@@ -404,12 +426,12 @@ int CheckersGame::goRecursive(CheckersState *state, int level, int alpha, int be
         return state->getScore();
 	}
     findAndProcessPossibleMoves(state, color);
-	unsigned i;
-    for(i=0; i< state->getXChild().size(); i++) {
+
+    for(int i=0; i< state->getXChild().size(); i++)
+    {
         alpha = std::max( alpha, - goRecursive( state->getXChild().at(i), level+1 , -beta, -alpha ) );
-		if ( beta < alpha ) {
-			break;
-		}
+
+        if ( beta < alpha ) break;
 	}
     int xMax=-9999, xMin=9999;
     for(unsigned j=0; j<state->getXChild().size(); j++) {
@@ -433,7 +455,7 @@ int CheckersGame::goRecursive(CheckersState *state, int level, int alpha, int be
 
 bool CheckersGame::isCoordinateValid(char x)
 {
-    return (x >= 0 && x < squaresCountWidthHeight);
+    return (x >= 0 && x < squaresCountOnDiagonal);
 }
 
 void CheckersGame::calcCounts(CheckersState * state)
@@ -444,9 +466,9 @@ void CheckersGame::calcCounts(CheckersState * state)
     state->getXCount().resize(8,0);
 
 	int movescount;
-    for(unsigned i=0; i < squaresCountWidthHeight; i++)
+    for(unsigned i=0; i < squaresCountOnDiagonal; i++)
     {
-        for(unsigned j=0; j < squaresCountWidthHeight; j++)
+        for(unsigned j=0; j < squaresCountOnDiagonal; j++)
         {
 			if(i%2!=j%2)
 				continue;
@@ -552,7 +574,7 @@ void CheckersGame::printPointVector(std::vector <Point> & v)
 
 void CheckersGame::setClicked(int i, int j)
 {
-    if(i>=0 && i<squaresCountWidthHeight && j>=0 && j<squaresCountWidthHeight && i%2==j%2 && gamerunning)
+    if(i>=0 && i<squaresCountOnDiagonal && j>=0 && j<squaresCountOnDiagonal && i%2==j%2 && gameRunning)
     {
 		std::cout << "Clicked at " << (int)i << " " << (int)j << " = "<< (int)current->at(i,j) << std::endl;
 
@@ -607,7 +629,7 @@ void CheckersGame::secondClick(int i, int j)
     }
     else
     {
-		if(gamerunning) go();
+        if(gameRunning) go();
 		click = 0;
 	}
 }
@@ -631,10 +653,12 @@ bool CheckersGame::move(Point p1, Point p2)
             tmp = new CheckersState(current); 	tmp->getXChild().clear();
 			historyStates.push_back( tmp );
 			emit stateChanged(current);
-			historynum = historyStates.size()-1;
-			if(checkTerminatePosition(current)) {
+            historyNum = historyStates.size()-1;
+
+            if(checkTerminatePosition(current))
+            {
 				emit gameEnded( whoWin(current) );
-				gamerunning = false;
+                gameRunning = false;
 			}
 			return true;
 		}

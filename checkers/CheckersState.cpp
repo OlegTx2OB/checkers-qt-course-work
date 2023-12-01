@@ -133,7 +133,7 @@ uint8 CheckersState::color(uint i, uint j)
 		return WHITE;
     if( at(i,j) == BLACK || at(i,j) == BLACKQUEEN)
 		return BLACK;
-	return false;
+    return 0;
 }
 
 bool CheckersState::isWhite(uint8 i, uint8 j)

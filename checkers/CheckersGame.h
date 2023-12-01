@@ -49,7 +49,7 @@ private:
 
     std::vector <std::vector <Point> > history;
 	std::vector <CheckersState *> historyStates;
-	int historynum;
+	int historyNum;
 
     std::vector <CheckersState *> moveSearch;
     std::vector < Point > tmpvector;
@@ -59,7 +59,7 @@ private:
     CheckersState * first;
     CheckersState * current;
 	CheckersState * tmp;
-    int squaresCountWidthHeight;
+    int squaresCountOnDiagonal;
     int checkersRowsCount;
     int type;
     int computerColor;
@@ -72,7 +72,7 @@ private:
 
     bool captureFound;
 	bool calccounts;
-    bool gamerunning;
+    bool gameRunning;
     int maxlevel;
 
 
