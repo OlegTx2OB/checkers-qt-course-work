@@ -37,20 +37,16 @@ public:
     int y;
     int type;
 
-bool operator == (const Point & p )
-{
-    return ( x==p.x && y==p.y && type==p.type );
-}
+bool operator == (const Point & p ) {return ( x==p.x && y==p.y && type==p.type );}
 
 };
 
 class CheckersState
 {
 public:
-    CheckersState(int getSquaresCountByDiagonal);
-	~CheckersState();
-	CheckersState(const CheckersState &source);
-	CheckersState(const CheckersState *source);
+    CheckersState(int squaresCountByDiagonal);
+    ~CheckersState();
+    CheckersState(const CheckersState *source);
 
     CheckersState * genNextState(std::vector <Point> & v);
 
@@ -59,28 +55,31 @@ public:
     CheckersState * getParent();
     std::vector < CheckersState * > & getXChild();
     std::vector < Point > & getXMove();
-    int & getDeletedMove();
+    int & getSetDeletedMove();
     int & getScore();
     uint8 getSquaresCountByDiagonal();
-	uint8 & at(uint8 i, uint8 j);
-	uint8 color(uint i, uint j);
+    uint8 & at(uint8 i, uint8 j);
+    uint8 color(uint i, uint j);
     void allocate(uint8 getSquaresCountByDiagonal);
 
 
 
-	bool isWhite(uint8 i, uint8 j);
-	bool isBlack(uint8 i, uint8 j);
+    bool isWhite(uint8 i, uint8 j);
+    bool isBlack(uint8 i, uint8 j);
     bool isQueen(uint8 i, uint8 j);
-	bool isNull(uint8 i, uint8 j);
+    bool isNull(uint8 i, uint8 j);
 
 private:
-	CheckersState * p;
+    CheckersState * p;
     std::vector < CheckersState * > xChild;
     std::vector < Point > xMove;
     std::vector < uint8 > xCount;
-	uint8 ** data;
-	uint8 n;
-	uint8 tmp;
-	int xscore;
+    uint8 ** data;
+    uint8 squaresCountByDiagonalTMP;
     int deletedMove;
+
+
+    //because of stupid spp these variables are used
+    uint8 tmp;
+    int xscore;
 };

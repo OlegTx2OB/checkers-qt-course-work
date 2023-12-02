@@ -22,21 +22,21 @@ CheckersPicture::~CheckersPicture()
 
 }
 
-CheckersState * CheckersPicture::state() {
-	return curstate;
-}
-
-void CheckersPicture::setComputerColor(uint8 color) {
+void CheckersPicture::setComputerColor(uint8 color)
+{
 	this->color = color;
 }
 
 void CheckersPicture::setState(CheckersState * state) {
-	if(state) {
+    if(state)
+    {
 		curstate = state;
         n = state->getSquaresCountByDiagonal();
 		v.clear();
 		update();
-	} else {
+    }
+    else
+    {
 		clear();
 	}
 }
@@ -46,8 +46,10 @@ void CheckersPicture::setSize(int n) {
 	update();
 }
 
-void CheckersPicture::deleteVector() {
-	if(v.size()) {
+void CheckersPicture::deleteVector()
+{
+    if(v.size())
+    {
 		v.clear();
 		update();
 	}

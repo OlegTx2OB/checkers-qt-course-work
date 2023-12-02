@@ -13,8 +13,8 @@ class CheckersPicture : public QWidget
 public:
 	CheckersPicture(QWidget * parent = 0);
 	~CheckersPicture();
-	CheckersState * state();
 	void setComputerColor(uint8 color);
+
 public slots:
 	void setState(CheckersState *state);
     void setVector(std::vector <Point> & v);

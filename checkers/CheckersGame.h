@@ -44,7 +44,7 @@ private:
     bool isCoordinateValid(char x);
 	void clearTree(CheckersState * state, bool clearlists = true, bool onlychilds = false);
 	void clearTreeRecursive(CheckersState * state, bool clearlists = false);
-    bool move(Point p1, Point p2);
+    bool makeMove(Point p1, Point p2);
 	uint8 whoWin(CheckersState * state);
 
     std::vector <std::vector <Point> > history;
@@ -52,13 +52,14 @@ private:
 	int historyNum;
 
     std::vector <CheckersState *> moveSearch;
-    std::vector < Point > tmpvector;
-    Point tmppoint;
+    std::vector < Point > tmpVector;
+    Point tmpPoint;
     void printPointVector(std::vector <Point> & v);
 
-    CheckersState * first;
-    CheckersState * current;
-	CheckersState * tmp;
+    CheckersState * firstCheckersState;
+    CheckersState * currentCheckersState;
+    CheckersState * tmpCheckersState;
+
     int squaresCountOnDiagonal;
     int checkersRowsCount;
     int type;
@@ -71,9 +72,8 @@ private:
     char jx[4];
 
     bool captureFound;
-	bool calccounts;
     bool gameRunning;
-    int maxlevel;
+    int maxLevel;
 
 
 	int cleared;

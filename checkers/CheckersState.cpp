@@ -1,50 +1,42 @@
 #include "CheckersState.h"
 
-CheckersState::CheckersState(int squaresCountWidthHeight)
+CheckersState::CheckersState(int squaresCountByDiagonal)
 {
-    allocate(squaresCountWidthHeight);
+    allocate(squaresCountByDiagonal);
 }
 
-CheckersState::CheckersState(const CheckersState &source)
+CheckersState::CheckersState(const CheckersState *source)
 {
-	allocate(source.n);
-	for(int i=0; i<n; i++)
-		for(int j=0; j<n/2; j++)
-			data[i][j] = source.data[i][j];
-    xCount = source.xCount;
-}
-
-CheckersState::CheckersState(const CheckersState *source) {
-	allocate(source->n);
-	for(int i=0; i<n; i++)
-		for(int j=0; j<n/2; j++)
-			data[i][j] = source->data[i][j];
+    allocate(source->squaresCountByDiagonalTMP);
+    for(int i = 0; i < squaresCountByDiagonalTMP; i++)
+        for(int j = 0; j < squaresCountByDiagonalTMP / 2; j++)
+            data[i][j] = source->data[i][j];
     xCount = source->xCount;
 }
 
-CheckersState::~CheckersState() {
-	for(int i=0; i<n; i++)
-		delete[] data[i];
+CheckersState::~CheckersState()
+{
+    for(int i=0; i<squaresCountByDiagonalTMP; i++)
+    delete[] data[i];
 	delete[] data;
 }
 
 void CheckersState::allocate(uint8 squaresCountByDiagonal)
 {
-    n = squaresCountByDiagonal;
-	data = new uint8 * [n];
-	for(int i=0; i<n; i++)
+    squaresCountByDiagonalTMP = squaresCountByDiagonal;
+    data = new uint8 * [squaresCountByDiagonalTMP];
+    for(int i=0; i<squaresCountByDiagonalTMP; i++)
 	{
-		data[i] = new uint8[n/2];
-		memset( data[i], 0, n/2*sizeof(uint8) );
+        data[i] = new uint8[squaresCountByDiagonalTMP/2];
+        memset( data[i], 0, squaresCountByDiagonalTMP/2*sizeof(uint8) );
 	}
-	tmp = 0;
 	p = NULL;
     deletedMove = 0;
 }
 
 uint8 CheckersState::getSquaresCountByDiagonal()
 {
-	return n;
+    return squaresCountByDiagonalTMP;
 }
 
 std::vector <uint8> & CheckersState::getXCount()
@@ -112,7 +104,7 @@ int & CheckersState::getScore()
 	return xscore;
 }
 
-int & CheckersState::getDeletedMove()
+int & CheckersState::getSetDeletedMove()
 {
     return deletedMove;
 }
