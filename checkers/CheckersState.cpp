@@ -30,18 +30,13 @@ void CheckersState::allocate(uint8 squaresCountByDiagonal)
         data[i] = new uint8[squaresCountByDiagonalTMP/2];
         memset( data[i], 0, squaresCountByDiagonalTMP/2*sizeof(uint8) );
 	}
-	p = NULL;
+    parent = NULL;
     deletedMove = 0;
 }
 
 uint8 CheckersState::getSquaresCountByDiagonal()
 {
     return squaresCountByDiagonalTMP;
-}
-
-std::vector <uint8> & CheckersState::getXCount()
-{
-    return xCount;
 }
 
 CheckersState * CheckersState::genNextState(std::vector <Point> & v) {
@@ -74,40 +69,44 @@ CheckersState * CheckersState::genNextState(std::vector <Point> & v) {
 				break;
 		}
 	}
-    state->getXMove() = v;
-    state->getXCount().clear();
+    state->setXMove(v);
+    state->xCount.clear();
 	return state;
 }
 
 void CheckersState::setParent(CheckersState * parent)
 {
-	p = parent;
-}
-
-CheckersState * CheckersState::getParent()
-{
-	return p;
-}
-
-std::vector < CheckersState * > & CheckersState::getXChild()
-{
-    return xChild;
+    this->parent = parent;
 }
 
 std::vector < Point > & CheckersState::getXMove()
 {
     return xMove;
 }
-
-int & CheckersState::getScore()
+void CheckersState::setXMove(std::vector < Point > xMove)
 {
-	return xscore;
+    this->xMove = xMove;
 }
 
-int & CheckersState::getSetDeletedMove()
+
+int & CheckersState::getXScore()
+{
+    return xScore;
+}
+void CheckersState::setXScore(int xScore)
+{
+    this->xScore = xScore;
+}
+
+int & CheckersState::getDeletedMove()
 {
     return deletedMove;
 }
+void CheckersState::setDeletedMove(int deletedMove)
+{
+    this->deletedMove = deletedMove;
+}
+
 
 uint8 & CheckersState::at(uint8 i, uint8 j)
 {
@@ -119,7 +118,7 @@ uint8 & CheckersState::at(uint8 i, uint8 j)
 	return data[i][j/2];
 }
 
-uint8 CheckersState::color(uint i, uint j)
+uint8 CheckersState::getFigureColor(uint i, uint j)
 {
     if( at(i,j) == WHITE || at(i,j) == WHITEQUEEN)
 		return WHITE;

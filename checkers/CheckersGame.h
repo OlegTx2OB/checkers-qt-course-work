@@ -17,8 +17,8 @@ class CheckersGame : public QObject
 public:
     CheckersGame();
 	~CheckersGame();
-    bool setGameType(int type);
-    void setSearchDepth(int level);
+    bool setGameType(int gameType);
+    void setSearchDepth(int searchDepth);
     void startNewGame(int color);
 	void endGame();
 public slots:
@@ -27,14 +27,13 @@ signals:
     void stateChanged(CheckersState *);
     void vectorChanged(std::vector <Point> & v);
 	void vectorDeleted();
-	void gameEnded(uint8);
 private:
     void firstClick(int i, int j);
     void secondClick(int i, int j);
 
     // AI
     void go();
-    int goRecursive(CheckersState * state, int level, int alpha, int beta);
+    int goRecursive(CheckersState * state, int searchDepth, int alpha, int beta);
     void calcCounts(CheckersState * state);
     int evaluation(CheckersState * state);
     void findAndProcessPossibleMoves(CheckersState * state, uint8 color);
@@ -45,37 +44,30 @@ private:
 	void clearTree(CheckersState * state, bool clearlists = true, bool onlychilds = false);
 	void clearTreeRecursive(CheckersState * state, bool clearlists = false);
     bool makeMove(Point p1, Point p2);
-	uint8 whoWin(CheckersState * state);
+    void printPointVector(std::vector <Point> & v);
 
-    std::vector <std::vector <Point> > history;
-	std::vector <CheckersState *> historyStates;
-	int historyNum;
+
 
     std::vector <CheckersState *> moveSearch;
-    std::vector < Point > tmpVector;
-    Point tmpPoint;
-    void printPointVector(std::vector <Point> & v);
+    Point firstSecondsClickPoint;
 
     CheckersState * firstCheckersState;
     CheckersState * currentCheckersState;
-    CheckersState * tmpCheckersState;
 
     int squaresCountOnDiagonal;
     int checkersRowsCount;
-    int type;
+    int gameType;
     int computerColor;
     int humanColor;
-
-    int level;
-    int click;
-    char ix[4];
-    char jx[4];
-
-    bool captureFound;
-    bool gameRunning;
-    int maxLevel;
+    int searchDepth;
 
 
-	int cleared;
-	int created;
+    bool isSecondClick;
+    bool isCaptureFound;
+
+
+//Arrays are used to store values that determine the direction of movement of checkers in the game
+    int directionsX[4];
+    int directionsY[4];
+
 };

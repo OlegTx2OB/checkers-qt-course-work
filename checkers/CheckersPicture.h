@@ -11,31 +11,37 @@ class CheckersPicture : public QWidget
 {
 	Q_OBJECT
 public:
-	CheckersPicture(QWidget * parent = 0);
+    CheckersPicture(QWidget * parent = 0);
 	~CheckersPicture();
-	void setComputerColor(uint8 color);
+    void setComputerColor(uint8 computerColor);
 
 public slots:
 	void setState(CheckersState *state);
-    void setVector(std::vector <Point> & v);
+    void setVector(std::vector <Point> & possibleMovesVector);
 	void deleteVector();
-	void setSize(int n);
 	void clear();
 signals:
 	void mouseClicked(int, int);
+
 protected:
 	void mousePressEvent(QMouseEvent *event);
 	void mouseMoveEvent(QMouseEvent *event);
-	void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent *event);
 	void resizeEvent (QResizeEvent * event);
+
+    void displayBorder(QPainter& painter);
+    void displayBoard(QPainter& painter);
+
+
+
 private:
 	QRect pixelRect(int i, int j) const;
 
-	CheckersState * curstate;
-    std::vector <Point> v;
-	QPoint p;
+    CheckersState * currState;
+    std::vector <Point> possibleMovesVector;
+    QPoint qPoint;
 	int side;
 	int zoom;
 	int n;
-    int color;
+    int computerColor;
 };

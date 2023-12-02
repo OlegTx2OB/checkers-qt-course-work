@@ -50,18 +50,10 @@ public:
 
     CheckersState * genNextState(std::vector <Point> & v);
 
-    void setParent(CheckersState * getParent);
-    std::vector <uint8> & getXCount();
-    CheckersState * getParent();
-    std::vector < CheckersState * > & getXChild();
-    std::vector < Point > & getXMove();
-    int & getSetDeletedMove();
-    int & getScore();
     uint8 getSquaresCountByDiagonal();
     uint8 & at(uint8 i, uint8 j);
-    uint8 color(uint i, uint j);
+    uint8 getFigureColor(uint i, uint j);
     void allocate(uint8 getSquaresCountByDiagonal);
-
 
 
     bool isWhite(uint8 i, uint8 j);
@@ -69,17 +61,30 @@ public:
     bool isQueen(uint8 i, uint8 j);
     bool isNull(uint8 i, uint8 j);
 
-private:
-    CheckersState * p;
-    std::vector < CheckersState * > xChild;
-    std::vector < Point > xMove;
+
+//getters-setters
+    int & getXScore();
+    int & getDeletedMove();
+    std::vector < Point > & getXMove();
+
+    void setXScore(int xScore);
+    void setDeletedMove(int deletedMove);
+    void setXMove(std::vector < Point > xMove);
+    void setParent(CheckersState * parent);
+
+
+public:
     std::vector < uint8 > xCount;
+    std::vector < CheckersState * > xChildVector;
+
+private:
+    CheckersState * parent;
+    std::vector < Point > xMove;
     uint8 ** data;
     uint8 squaresCountByDiagonalTMP;
     int deletedMove;
-
+    int xScore;
 
     //because of stupid spp these variables are used
     uint8 tmp;
-    int xscore;
 };
