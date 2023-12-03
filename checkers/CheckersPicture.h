@@ -17,7 +17,6 @@ public:
 
 public slots:
 	void setState(CheckersState *state);
-   void setPossibleMovesVector(std::vector <Point> & possibleMovesVector);
     void deletePossibleMovesVector();
 	void clear();
 signals:
