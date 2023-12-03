@@ -24,18 +24,19 @@ public:
 public slots:
 	void setClicked(int i, int j);
 signals:
-    void stateChanged(CheckersState *);
-    void vectorChanged(std::vector <Point> & v);
+    void stateChanged(CheckersState *state);
+    void vectorChanged(std::vector <Point> & possibleMovesVectorTMP);
 	void vectorDeleted();
 private:
     void firstClick(int i, int j);
     void secondClick(int i, int j);
 
     // AI
-    void go();
-    int goRecursive(CheckersState * state, int searchDepth, int alpha, int beta);
-    void calcCounts(CheckersState * state);
-    int evaluation(CheckersState * state);
+    void performComputerMove();
+    int recursiveSearchMinimax(CheckersState * state, int searchDepth, int alpha, int beta);
+
+    void calculatePieceStatistics(CheckersState * state);
+    int calculateGameStateScore(CheckersState * state);
     void findAndProcessPossibleMoves(CheckersState * state, uint8 color);
     bool checkTerminatePosition(CheckersState * state);
     int countAvailableMoves(CheckersState * state, int i, int j);
@@ -44,15 +45,11 @@ private:
 	void clearTree(CheckersState * state, bool clearlists = true, bool onlychilds = false);
 	void clearTreeRecursive(CheckersState * state, bool clearlists = false);
     bool makeMove(Point p1, Point p2);
-    void printPointVector(std::vector <Point> & v);
-
-
 
     std::vector <CheckersState *> possibleNextStates;
     Point clickPointCoordinates;
 
-    CheckersState * firstState;
-    CheckersState * currentState;
+    CheckersState * state;
 
     int squaresCountOnDiagonal;
     int checkersRowsCount;
