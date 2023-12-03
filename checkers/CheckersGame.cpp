@@ -279,7 +279,7 @@ int CheckersGame::searchMove(CheckersState *state, int i, int j, std::vector <Po
                 tmp_vp.clear();
                 tmp_vp.push_back(Point(i,j,MOVEDFROM));
                 if ( (color==BLACK && xj==0 && !isking) || (color==WHITE && xj==squaresCountOnDiagonal-1 && !isking)  ) {
-                    tmp_vp.push_back(Point(xi,xj,TOKING));
+                    tmp_vp.push_back(Point(xi,xj,TOQUEEN));
                 } else {
                     tmp_vp.push_back(Point(xi,xj,MOVEDTO));
                 }
@@ -323,11 +323,11 @@ int CheckersGame::searchMove(CheckersState *state, int i, int j, std::vector <Po
                 tmp_vp.push_back(Point(i,j,MOVEDFROM));
                 tmp_vp.push_back(cp);
                 if ( (color==BLACK && xj==0 && !isking) || (color==WHITE && xj==squaresCountOnDiagonal-1 && !isking)  ) // 检查
-                    tmp_vp.push_back(Point(xi,xj,TOKING));
+                    tmp_vp.push_back(Point(xi,xj,TOQUEEN));
                 else
                     tmp_vp.push_back(Point(xi,xj,MOVEDTO));
 
-                CheckersState *tmpstate = state->genNextState(tmp_vp);
+                CheckersState *tmpstate = state->generateNextState(tmp_vp);
 
                 std::vector <Point> history_vector = vp;
                 if( vp.size() ) {
@@ -356,7 +356,7 @@ int CheckersGame::searchMove(CheckersState *state, int i, int j, std::vector <Po
     else
     {
         for(unsigned i=0; i<vpp.size(); i++) {
-            CheckersState * tmpstate = state->genNextState(vpp.at(i));
+            CheckersState * tmpstate = state->generateNextState(vpp.at(i));
             tmpstate->setParent(state);
             state->xChildVector.push_back(tmpstate);
             moveSearch.push_back(tmpstate);
@@ -444,8 +444,8 @@ void CheckersGame::calcCounts(CheckersState * state)
 {
 	std::vector <CheckersState *> tmp;
 
-    state->xCount.clear();
-    state->xCount.resize(8,0);
+    state->checkersCount.clear();
+    state->checkersCount.resize(8,0);
 
 	int movescount;
     for(unsigned i=0; i < squaresCountOnDiagonal; i++)
@@ -457,23 +457,23 @@ void CheckersGame::calcCounts(CheckersState * state)
             movescount = countAvailableMoves(state, i, j);
             if(state->at(i,j)==WHITE)
             {
-                state->xCount[0]++;
-                state->xCount[2] += movescount;
+                state->checkersCount[0]++;
+                state->checkersCount[2] += movescount;
 			}
             if(state->at(i,j)==WHITEQUEEN)
             {
-                state->xCount[1]++;
-                state->xCount[2] += movescount;
+                state->checkersCount[1]++;
+                state->checkersCount[2] += movescount;
 			}
             if(state->at(i,j)==BLACK)
             {
-                state->xCount[4]++;
-                state->xCount[6] += movescount;
+                state->checkersCount[4]++;
+                state->checkersCount[6] += movescount;
 			}
             if(state->at(i,j)==BLACKQUEEN)
             {
-                state->xCount[5]++;
-                state->xCount[6] += movescount;
+                state->checkersCount[5]++;
+                state->checkersCount[6] += movescount;
 			}
 		}
 	}
@@ -484,24 +484,24 @@ void CheckersGame::calcCounts(CheckersState * state)
 
 int CheckersGame::evaluation(CheckersState * state)
 {
-    if(!state->xCount.size())
+    if(!state->checkersCount.size())
 		calcCounts(state);
 	int evaluation = 0;
-    evaluation += 4 * ( state->xCount[0] - state->xCount[4] );
-    evaluation += 6 * ( state->xCount[1] - state->xCount[5] );
-    evaluation += ( state->xCount[2] - state->xCount[6] );
+    evaluation += 4 * ( state->checkersCount[0] - state->checkersCount[4] );
+    evaluation += 6 * ( state->checkersCount[1] - state->checkersCount[5] );
+    evaluation += ( state->checkersCount[2] - state->checkersCount[6] );
 	return evaluation;
 }
 
 bool CheckersGame::checkTerminatePosition(CheckersState * state)
 {
-    if(!state->xCount.size())
+    if(!state->checkersCount.size())
 		calcCounts(state);
-    if ( !(state->xCount[0]+state->xCount[1]) ||
-         !(state->xCount[4]+state->xCount[5]) )
+    if ( !(state->checkersCount[0]+state->checkersCount[1]) ||
+         !(state->checkersCount[4]+state->checkersCount[5]) )
 		return true;
 
-    if( !state->xCount[2] || !state->xCount[6] )
+    if( !state->checkersCount[2] || !state->checkersCount[6] )
 		return true;
 	return false;
 }

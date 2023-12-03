@@ -24,7 +24,7 @@ enum checker
     MOVEDTHROUGH = 22,
     DELETED = 23,
     MARKDELETED = 24,
-    TOKING = 25
+    TOQUEEN = 25
 };
 
 class Point
@@ -48,16 +48,13 @@ public:
     ~CheckersState();
     CheckersState(const CheckersState *source);
 
-    CheckersState * genNextState(std::vector <Point> & v);
+    CheckersState * generateNextState(std::vector <Point> & v);
 
     uint8 getSquaresCountByDiagonal();
     uint8 & at(uint8 i, uint8 j);
     uint8 getFigureColor(uint i, uint j);
-    void allocate(uint8 getSquaresCountByDiagonal);
+    void allocateMemory(uint8 getSquaresCountByDiagonal);
 
-
-    bool isWhite(uint8 i, uint8 j);
-    bool isBlack(uint8 i, uint8 j);
     bool isQueen(uint8 i, uint8 j);
     bool isNull(uint8 i, uint8 j);
 
@@ -74,7 +71,7 @@ public:
 
 
 public:
-    std::vector < uint8 > xCount;
+    std::vector < uint8 > checkersCount;
     std::vector < CheckersState * > xChildVector;
 
 private:
@@ -85,6 +82,6 @@ private:
     int deletedMove;
     int xScore;
 
-    //because of stupid spp these variables are used
+    //because of stupid spp this variable is used
     uint8 tmp;
 };

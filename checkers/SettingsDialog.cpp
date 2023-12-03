@@ -37,9 +37,9 @@ void SettingsDialog::loadSettings()
 	if( type != RUSSIAN && type!= INTERNATIONAL )
 		type = RUSSIAN;
 
-	int depth = settings.value("depth",3).toInt();
+    int depthSearch = settings.value("depth",3).toInt();
 
-    if( depth < 3 || depth > 7) depth = 3;
+    if( depthSearch < 3 || depthSearch > 7) depthSearch = 3;
 
 	if( type == INTERNATIONAL )
 		ui->comboBox->setCurrentIndex(1);
@@ -49,7 +49,7 @@ void SettingsDialog::loadSettings()
     if( color == BLACK ) ui->comboBoxColor->setCurrentIndex(1);
     else ui->comboBoxColor->setCurrentIndex(0);
 
-	ui->spinBox->setValue(depth);
+    ui->spinBox->setValue(depthSearch);
 }
 
 

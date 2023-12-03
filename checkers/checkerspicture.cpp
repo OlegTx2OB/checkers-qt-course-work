@@ -11,16 +11,13 @@ CheckersPicture::CheckersPicture(QWidget *parent) : QWidget(parent)
 	setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 	setAttribute(Qt::WA_StaticContents);
 
-    zoom = 32;
+    displayScale = 32;
     currState = NULL;
 	n = 10;
-    setMinimumSize(zoom * n,zoom * n);
+    setMinimumSize(displayScale * n,displayScale * n);
 }
 
-CheckersPicture::~CheckersPicture()
-{
-
-}
+CheckersPicture::~CheckersPicture() {}
 
 void CheckersPicture::setComputerColor(uint8 color)
 {
@@ -36,22 +33,20 @@ void CheckersPicture::setState(CheckersState * state)
         possibleMovesVector.clear();
 		update();
     }
-    else
-    {
-		clear();
-	}
+    else clear();
 }
 
-void CheckersPicture::deleteVector()
+void CheckersPicture::deletePossibleMovesVector()
 {
     if(possibleMovesVector.size())
     {
-        possibleMovesVector.clear();
-		update();
+       possibleMovesVector.clear();
+        update();
 	}
 }
 
-void CheckersPicture::setVector(std::vector <Point> & v) {
+void CheckersPicture::setPossibleMovesVector(std::vector <Point> & v)
+{
     this->possibleMovesVector = v;
 	update();
 }
@@ -67,8 +62,8 @@ void CheckersPicture::mousePressEvent(QMouseEvent *event)
 {
 
 	if (event->buttons() && Qt::LeftButton) {
-        qreal i = (event->pos().x() - qPoint.x() + side/(2*n+2))*(n+1)/side - 1.0;
-        qreal j = (double)n - (event->pos().y() - qPoint.y() + side/(2*n+2))*(n+1)/side;
+        qreal i = (event->pos().x() - qPoint.x() + boardSizeInPixels/(2*n+2))*(n+1)/boardSizeInPixels - 1.0;
+        qreal j = (double)n - (event->pos().y() - qPoint.y() + boardSizeInPixels/(2*n+2))*(n+1)/boardSizeInPixels;
         if(computerColor==BLACK)
 			emit mouseClicked((int)i,(int)j);
 		else
@@ -76,15 +71,13 @@ void CheckersPicture::mousePressEvent(QMouseEvent *event)
 	}
 }
 
-void CheckersPicture::mouseMoveEvent(QMouseEvent *event){}
-
 void CheckersPicture::displayBorder(QPainter & painter)
 {
     QColor border(88, 62, 30);
-    painter.fillRect(QRect(0,0,zoom*(n+1.0),zoom*0.5), border);
-    painter.fillRect(QRect(0,zoom*(n+0.5),zoom*(n+1.0),zoom*0.5), border);
-    painter.fillRect(QRect(0,0,zoom*(0.5),zoom*(n+1.0)), border);
-    painter.fillRect(QRect(zoom*(n+0.5),0,zoom*0.5,zoom*(n+1.0)), border);
+    painter.fillRect(QRect(0,0,displayScale*(n+1.0),displayScale*0.5), border);
+    painter.fillRect(QRect(0,displayScale*(n+0.5),displayScale*(n+1.0),displayScale*0.5), border);
+    painter.fillRect(QRect(0,0,displayScale*(0.5),displayScale*(n+1.0)), border);
+    painter.fillRect(QRect(displayScale*(n+0.5),0,displayScale*0.5,displayScale*(n+1.0)), border);
 }
 void CheckersPicture::displayBoard(QPainter & painter)
 {
@@ -101,22 +94,11 @@ void CheckersPicture::displayBoard(QPainter & painter)
         }
     }
 }
-void CheckersPicture::paintEvent(QPaintEvent *event)
+void CheckersPicture::displayActiveBoardSquares(QPainter & painter)
 {
-	qDebug() << "CheckersPicture::paintEvent()";
+    int xCoordinate;
+    int yCoordinate;
 
-	QPainter painter(this);
-
-    //Antialiasing true
-    painter.setRenderHint(QPainter::Antialiasing, true);
-    //set Window
-    painter.setViewport(qPoint.x(),qPoint.y(),side,side);
-    painter.setWindow(0, 0, zoom*(n+1.0), zoom*(n+1.0));
-
-    displayBorder(painter);
-    displayBoard(painter);
-
-    int xCoordinate,yCoordinate;
     QColor endColor(100,100,100);
     QColor startColor(0x33,0xff,0x00);
     QColor capturedColor(0xff,0x33,0x33);
@@ -126,13 +108,13 @@ void CheckersPicture::paintEvent(QPaintEvent *event)
         int type;
         for(unsigned i=0; i< possibleMovesVector.size(); i++)
         {
-            computerColor==WHITE ? yCoordinate = n-1-possibleMovesVector.at(i).y : yCoordinate = possibleMovesVector.at(i).y;
-            computerColor==WHITE ? xCoordinate = n-1-possibleMovesVector.at(i).x : xCoordinate = possibleMovesVector.at(i).x;
+            computerColor == WHITE ? yCoordinate = n-1-possibleMovesVector.at(i).y : yCoordinate = possibleMovesVector.at(i).y;
+            computerColor == WHITE ? xCoordinate = n-1-possibleMovesVector.at(i).x : xCoordinate = possibleMovesVector.at(i).x;
             QRect rect = pixelRect(xCoordinate, yCoordinate);
             type = possibleMovesVector.at(i).type;
             if(type == MOVEDFROM)
                 painter.fillRect(rect, startColor);
-            else if(type == MOVEDTO || type == TOKING)
+            else if(type == MOVEDTO || type == TOQUEEN)
                 painter.fillRect(rect, endColor);
             else if(type == MOVEDTHROUGH)
                 painter.fillRect(rect, normalColor);
@@ -140,12 +122,20 @@ void CheckersPicture::paintEvent(QPaintEvent *event)
                 painter.fillRect(rect, capturedColor);
         }
     }
+}
 
-	int s = zoom*0.4;
-	int sd = zoom*0.2;
+void CheckersPicture::displayFigures(QPainter &painter)
+{
+    int xCoordinate;
+    int yCoordinate;
+
+
+
+    int s = displayScale*0.4;
+    int sd = displayScale*0.2;
     if(currState) {
-		painter.setPen(QPen(Qt::black,zoom*0.1));
-		painter.setBrush(QBrush(Qt::white));
+        painter.setPen(QPen(Qt::black,displayScale*0.1));
+        painter.setBrush(QBrush(Qt::white));
         for(int i=0; i<n; i++)
         {
             for(int j=0; j<n; j++)
@@ -153,15 +143,15 @@ void CheckersPicture::paintEvent(QPaintEvent *event)
                 computerColor==WHITE ? yCoordinate = j+1 : yCoordinate = n-j;
                 computerColor==WHITE? xCoordinate = n-i : xCoordinate = i+1;
                 if(currState->at(i,j)==WHITE)
-                    painter.drawEllipse(QPoint(zoom*(xCoordinate),zoom*(yCoordinate)),s,s);
+                    painter.drawEllipse(QPoint(displayScale*(xCoordinate),displayScale*(yCoordinate)),s,s);
                 if(currState->at(i,j)==WHITEQUEEN)
                 {
-                    painter.drawEllipse(QPoint(zoom*(xCoordinate),zoom*(yCoordinate)),s,s);
-                    painter.drawEllipse(QPoint(zoom*(xCoordinate),zoom*(yCoordinate)),sd,sd);
-				}
-			}
-		}
-		painter.setBrush(QBrush(Qt::black));
+                    painter.drawEllipse(QPoint(displayScale*(xCoordinate),displayScale*(yCoordinate)),s,s);
+                    painter.drawEllipse(QPoint(displayScale*(xCoordinate),displayScale*(yCoordinate)),sd,sd);
+                }
+            }
+        }
+        painter.setBrush(QBrush(Qt::black));
         for(int i=0; i<n; i++)
         {
             for(int j=0; j<n; j++)
@@ -169,26 +159,46 @@ void CheckersPicture::paintEvent(QPaintEvent *event)
                 computerColor==WHITE ? yCoordinate = j+1 : yCoordinate = n-j;
                 computerColor==WHITE ? xCoordinate = n-i : xCoordinate = i+1;
                 if(currState->at(i,j)==BLACK)
-                    painter.drawEllipse(QPoint(zoom*(xCoordinate),zoom*(yCoordinate)),s,s);
+                    painter.drawEllipse(QPoint(displayScale*(xCoordinate),displayScale*(yCoordinate)),s,s);
                 if(currState->at(i,j)==BLACKQUEEN)
                 {
-                    painter.drawEllipse(QPoint(zoom*(xCoordinate),zoom*(yCoordinate)),s,s);
-					painter.setPen(QPen(Qt::white,zoom*0.1));
-                    painter.drawEllipse(QPoint(zoom*(xCoordinate),zoom*(yCoordinate)),sd,sd);
-					painter.setPen(QPen(Qt::black,zoom*0.1));
-				}
-			}
-		}
-	}
+                    painter.drawEllipse(QPoint(displayScale*(xCoordinate),displayScale*(yCoordinate)),s,s);
+                    painter.setPen(QPen(Qt::white,displayScale*0.1));
+                    painter.drawEllipse(QPoint(displayScale*(xCoordinate),displayScale*(yCoordinate)),sd,sd);
+                    painter.setPen(QPen(Qt::black,displayScale*0.1));
+                }
+            }
+        }
+    }
+}
+void CheckersPicture::paintEvent(QPaintEvent *event)
+{
+	qDebug() << "CheckersPicture::paintEvent()";
+
+	QPainter painter(this);
+
+    //Antialiasing true
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    //set Window
+    painter.setViewport(qPoint.x(),qPoint.y(),boardSizeInPixels,boardSizeInPixels);
+    painter.setWindow(0, 0, displayScale*(n+1.0), displayScale*(n+1.0));
+
+
+
+    displayBorder(painter);
+    displayBoard(painter);
+
+    displayActiveBoardSquares(painter);
+    displayFigures(painter);
 }
 
 void CheckersPicture::resizeEvent (QResizeEvent * event)
 {
     if(event->oldSize()!=event->size())
     {
-		update();
-		side = qMin(width(), height());
-        qPoint = QPoint((width() - side) / 2, (height() - side) / 2);
+        update();
+        boardSizeInPixels = qMin(width(), height());
+        qPoint = QPoint((width() - boardSizeInPixels) / 2, (height() - boardSizeInPixels) / 2);
     }
     else event->ignore();
 
@@ -196,7 +206,7 @@ void CheckersPicture::resizeEvent (QResizeEvent * event)
 
 QRect CheckersPicture::pixelRect(int i, int j) const
 {
-    return QRect(zoom * i + zoom*0.5, zoom*(n-0.5) - zoom * j, zoom, zoom);
+    return QRect(displayScale * i + displayScale*0.5, displayScale*(n-0.5) - displayScale * j, displayScale, displayScale);
 }
 
 

@@ -17,21 +17,21 @@ public:
 
 public slots:
 	void setState(CheckersState *state);
-    void setVector(std::vector <Point> & possibleMovesVector);
-	void deleteVector();
+   void setPossibleMovesVector(std::vector <Point> & possibleMovesVector);
+    void deletePossibleMovesVector();
 	void clear();
 signals:
 	void mouseClicked(int, int);
 
 protected:
 	void mousePressEvent(QMouseEvent *event);
-	void mouseMoveEvent(QMouseEvent *event);
     void paintEvent(QPaintEvent *event);
 	void resizeEvent (QResizeEvent * event);
 
     void displayBorder(QPainter& painter);
     void displayBoard(QPainter& painter);
-
+    void displayActiveBoardSquares(QPainter & painter);
+    void displayFigures(QPainter & painter);
 
 
 private:
@@ -40,8 +40,9 @@ private:
     CheckersState * currState;
     std::vector <Point> possibleMovesVector;
     QPoint qPoint;
-	int side;
-	int zoom;
-	int n;
+    int boardSizeInPixels;
+    int displayScale;
+    //squaresCountByDiagonal (but this name is too much big)
+    int n;
     int computerColor;
 };
