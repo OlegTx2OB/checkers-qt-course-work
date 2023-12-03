@@ -5,8 +5,8 @@ CheckersGame::CheckersGame()
 	setGameType(RUSSIAN);
 
 	srand(time(NULL));
-    currentCheckersState = nullptr;
-    firstCheckersState = nullptr;
+    currentState = nullptr;
+    firstState = nullptr;
 }
 
 CheckersGame::~CheckersGame()
@@ -48,24 +48,24 @@ void CheckersGame::startNewGame(int chosenComputerColor)
     computerColor = chosenComputerColor;
     if(chosenComputerColor == WHITE) humanColor = BLACK;
     else humanColor = WHITE;
-    firstCheckersState = new CheckersState(squaresCountOnDiagonal);
+    firstState = new CheckersState(squaresCountOnDiagonal);
 
     for(int i=0; i<squaresCountOnDiagonal; i++)
     {
         for(int j=0; j<checkersRowsCount; j++)
         {
             if(i%2 == j%2)
-                firstCheckersState->at(i,j) = WHITE;
+                firstState->at(i,j) = WHITE;
         }
         for(int j=squaresCountOnDiagonal-checkersRowsCount; j<squaresCountOnDiagonal; j++)
         {
             if(i%2 == j%2)
-                firstCheckersState->at(i,j) = BLACK;
+                firstState->at(i,j) = BLACK;
         }
     }
 
-    if(currentCheckersState) delete currentCheckersState;
-    currentCheckersState = new CheckersState(firstCheckersState);
+    if(currentState) delete currentState;
+    currentState = new CheckersState(firstState);
 
     isSecondClick = false;
 
@@ -75,19 +75,19 @@ void CheckersGame::startNewGame(int chosenComputerColor)
     if(computerColor == WHITE) go();
     else
     {
-        emit stateChanged(currentCheckersState);
-        findAndProcessPossibleMoves(currentCheckersState,humanColor);
+        emit stateChanged(currentState);
+        findAndProcessPossibleMoves(currentState,humanColor);
     }
 }
 
 void CheckersGame::endGame()
 {
-    if(currentCheckersState)
+    if(currentState)
     {
-        clearTree(currentCheckersState, true, true);
-        currentCheckersState = NULL;
+        clearTree(currentState, true, true);
+        currentState = NULL;
 	}
-    firstCheckersState = NULL;
+    firstState = NULL;
 }
 
 void CheckersGame::findAndProcessPossibleMoves(CheckersState * state, uint8 color)
@@ -112,12 +112,12 @@ void CheckersGame::findAndProcessPossibleMoves(CheckersState * state, uint8 colo
     //If a capture is found, the list of possible moves is processed
     if(isCaptureFound)
     {
-        for(unsigned i=0; i<moveSearch.size(); i++)
+        for(unsigned i=0; i<possibleNextStates.size(); i++)
         {
-            if( moveSearch.at(i)->getXMove().size() == 2 )
+            if( possibleNextStates.at(i)->getMovePath().size() == 2 )
             {
-                delete moveSearch.at(i);
-                moveSearch.erase( moveSearch.begin()+i );
+                delete possibleNextStates.at(i);
+                possibleNextStates.erase( possibleNextStates.begin()+i );
 				i--;
             }
             else break;
@@ -133,40 +133,39 @@ void CheckersGame::findAndProcessPossibleMoves(CheckersState * state, uint8 colo
          * If the number of captured checkers in the current move is greater
          * than max_deleted, then max_deleted is updated with this value.
         */
-        for(unsigned i=0; i<moveSearch.size(); i++)
+        for(unsigned i=0; i<possibleNextStates.size(); i++)
         {
-            if( moveSearch.at(i)->getDeletedMove() > maxPossibleCaptures )
-                maxPossibleCaptures = moveSearch.at(i)->getDeletedMove();
+            if( possibleNextStates.at(i)->getDeletedFiguresCount() > maxPossibleCaptures )
+                maxPossibleCaptures = possibleNextStates.at(i)->getDeletedFiguresCount();
 		}
         /*checks if the number of captured checkers in the current move is less than max_deleted.
          * If it is, then that move is deleted from moveSearch,
          * and the memory occupied by that object is freed.
          */
-        for(unsigned i = 0; i < moveSearch.size(); i++)
+        for(unsigned i = 0; i < possibleNextStates.size(); i++)
         {
-            if( moveSearch.at(i)->getDeletedMove() < maxPossibleCaptures )
+            if( possibleNextStates.at(i)->getDeletedFiguresCount() < maxPossibleCaptures )
             {
-                delete moveSearch.at(i);
-                moveSearch.erase( moveSearch.begin() + i );
+                delete possibleNextStates.at(i);
+                possibleNextStates.erase( possibleNextStates.begin() + i );
 				i--;
 			}
 		}
 	}
 
     //processing all possible moves found in the game of checkers and preparing them for further use
-    for(unsigned i=0; i < moveSearch.size(); i++)
+    for(unsigned i=0; i < possibleNextStates.size(); i++)
     {
         std::vector<Point>::iterator it;
-        for ( it = moveSearch.at(i)->getXMove().begin() ; it < moveSearch.at(i)->getXMove().end(); it++ )
+        for ( it = possibleNextStates.at(i)->getMovePath().begin() ; it < possibleNextStates.at(i)->getMovePath().end(); it++ )
         {
 			if( it->type == DELETED )
-                moveSearch.at(i)->at( it->x, it->y ) = 0;
+                possibleNextStates.at(i)->at( it->x, it->y ) = 0;
 		}
-        moveSearch.at(i)->setParent(state);
-        state->childStatesVector.push_back( moveSearch.at(i) );
+        state->nextPossibleStates.push_back( possibleNextStates.at(i) );
 	}
 
-    moveSearch.clear();
+    possibleNextStates.clear();
 }
 
 int CheckersGame::countAvailableMoves(CheckersState * state, int i, int j)
@@ -333,20 +332,19 @@ int CheckersGame::searchMove(CheckersState *state, int i, int j, std::vector <Po
                 if( vp.size() ) {
                     (history_vector.end()-1)->type = MOVEDTHROUGH;
                     (history_vector.end()-2)->type = DELETED;
-                    tmpstate->setDeletedMove(state->getDeletedMove() + 1);
+                    tmpstate->setDeletedFiguresCount(state->getDeletedFiguresCount() + 1);
                 } else {
                     history_vector.push_back( tmp_vp.at(0) );
-                    tmpstate->setDeletedMove(1);
+                    tmpstate->setDeletedFiguresCount(1);
                 }
                 cp.type = DELETED;
                 history_vector.push_back( cp );
                 history_vector.push_back( tmp_vp.at(2) );
 
-                tmpstate->setXMove(history_vector);
-                tmpstate->setParent(state);
-                state->childStatesVector.push_back(tmpstate);
+                tmpstate->setMovePath(history_vector);
+                state->nextPossibleStates.push_back(tmpstate);
                 if(! searchMove(tmpstate, xi, xj, history_vector ))
-                    moveSearch.push_back(tmpstate);
+                    possibleNextStates.push_back(tmpstate);
             }
         }
     }
@@ -357,9 +355,8 @@ int CheckersGame::searchMove(CheckersState *state, int i, int j, std::vector <Po
     {
         for(unsigned i=0; i<vpp.size(); i++) {
             CheckersState * tmpstate = state->generateNextState(vpp.at(i));
-            tmpstate->setParent(state);
-            state->childStatesVector.push_back(tmpstate);
-            moveSearch.push_back(tmpstate);
+            state->nextPossibleStates.push_back(tmpstate);
+            possibleNextStates.push_back(tmpstate);
         }
     }
     return normmoves + delmoves;
@@ -367,26 +364,26 @@ int CheckersGame::searchMove(CheckersState *state, int i, int j, std::vector <Po
 
 void CheckersGame::go()
 {
-    goRecursive(currentCheckersState, 1, -9999, 9999);
+    goRecursive(currentState, 1, -9999, 9999);
     int xMax = -9999;
 	int id = 0;
-    for(unsigned i=0; i<currentCheckersState->childStatesVector.size(); i++)
+    for(unsigned i=0; i<currentState->nextPossibleStates.size(); i++)
     {
-        if( currentCheckersState->childStatesVector.at(i)->getXScore() > xMax )
-            xMax = currentCheckersState->childStatesVector.at(i)->getXScore();
+        if( currentState->nextPossibleStates.at(i)->getMoveEvaluationScore() > xMax )
+            xMax = currentState->nextPossibleStates.at(i)->getMoveEvaluationScore();
 	}
 
 	std::vector <CheckersState *> tmp;
-    for(unsigned i=0; i<currentCheckersState->childStatesVector.size(); i++)
+    for(unsigned i=0; i<currentState->nextPossibleStates.size(); i++)
     {
-        if( currentCheckersState->childStatesVector.at(i)->getXScore() == xMax )
-            tmp.push_back( currentCheckersState->childStatesVector.at(i) );
+        if( currentState->nextPossibleStates.at(i)->getMoveEvaluationScore() == xMax )
+            tmp.push_back( currentState->nextPossibleStates.at(i) );
 	}
 
 	id = rand() % tmp.size();
 
-    makeMove( tmp.at(id)->getXMove().front(), tmp.at(id)->getXMove().back() );
-    findAndProcessPossibleMoves(currentCheckersState,humanColor);
+    makeMove( tmp.at(id)->getMovePath().front(), tmp.at(id)->getMovePath().back() );
+    findAndProcessPossibleMoves(currentState,humanColor);
 }
 
 int CheckersGame::goRecursive(CheckersState *state, int level, int alpha, int beta)
@@ -404,34 +401,34 @@ int CheckersGame::goRecursive(CheckersState *state, int level, int alpha, int be
 	}
     if(level == searchDepth || checkTerminatePosition(state))
     {
-        state->setXScore(evaluation(state));
-        return state->getXScore();
+        state->setMoveEvaluationScore(evaluation(state));
+        return state->getMoveEvaluationScore();
 	}
     findAndProcessPossibleMoves(state, color);
 
-    for(int i=0; i< state->childStatesVector.size(); i++)
+    for(int i=0; i< state->nextPossibleStates.size(); i++)
     {
-        alpha = std::max( alpha, - goRecursive( state->childStatesVector.at(i), level+1 , -beta, -alpha ) );
+        alpha = std::max( alpha, - goRecursive( state->nextPossibleStates.at(i), level+1 , -beta, -alpha ) );
 
         if ( beta < alpha ) break;
 	}
     int xMax=-9999, xMin=9999;
-    for(unsigned j=0; j<state->childStatesVector.size(); j++) {
+    for(unsigned j=0; j<state->nextPossibleStates.size(); j++) {
         if(max)
         {
-            if( state->childStatesVector.at(j)->getXScore() > xMax )
-                xMax = state->childStatesVector.at(j)->getXScore();
+            if( state->nextPossibleStates.at(j)->getMoveEvaluationScore() > xMax )
+                xMax = state->nextPossibleStates.at(j)->getMoveEvaluationScore();
         }
         else
         {
-            if( state->childStatesVector.at(j)->getXScore() < xMin )
-                xMin = state->childStatesVector.at(j)->getXScore();
+            if( state->nextPossibleStates.at(j)->getMoveEvaluationScore() < xMin )
+                xMin = state->nextPossibleStates.at(j)->getMoveEvaluationScore();
 		}
 	}
 	if(max)
-        state->setXScore(xMax);
+        state->setMoveEvaluationScore(xMax);
 	else
-        state->setXScore(xMin);
+        state->setMoveEvaluationScore(xMin);
 	return alpha;
 }
 
@@ -478,7 +475,7 @@ void CheckersGame::calcCounts(CheckersState * state)
 		}
 	}
 	if(tmp.size()) {
-        state->childStatesVector = tmp;
+        state->nextPossibleStates = tmp;
 	}
 }
 
@@ -510,9 +507,9 @@ void CheckersGame::clearTree(CheckersState * state, bool clearlists, bool isOnly
 {
     if (isOnlyChilds)
     {
-        for(unsigned i =0; i < state->childStatesVector.size(); i++)
-            clearTreeRecursive( state->childStatesVector.at(i), clearlists );
-        state->childStatesVector.clear();
+        for(unsigned i =0; i < state->nextPossibleStates.size(); i++)
+            clearTreeRecursive( state->nextPossibleStates.at(i), clearlists );
+        state->nextPossibleStates.clear();
     }
     else clearTreeRecursive( state, clearlists );
 
@@ -520,15 +517,15 @@ void CheckersGame::clearTree(CheckersState * state, bool clearlists, bool isOnly
 
 void CheckersGame::clearTreeRecursive(CheckersState * state, bool clearlists)
 {
-    if( state->childStatesVector.size() == 0 && clearlists )
+    if( state->nextPossibleStates.size() == 0 && clearlists )
     {
 		delete state;
     }
     else
     {
-        for(unsigned i =0; i < state->childStatesVector.size(); i++)
-            clearTreeRecursive( state->childStatesVector.at(i), clearlists );
-        state->childStatesVector.clear();
+        for(unsigned i =0; i < state->nextPossibleStates.size(); i++)
+            clearTreeRecursive( state->nextPossibleStates.at(i), clearlists );
+        state->nextPossibleStates.clear();
 
         if(clearlists) delete state;
 	}
@@ -545,7 +542,7 @@ void CheckersGame::setClicked(int i, int j)
 {
     if(i>=0 && i<squaresCountOnDiagonal && j>=0 && j<squaresCountOnDiagonal && i%2==j%2 )
     {
-        std::cout << "Clicked at " << (int)i << " " << (int)j << " = "<< (int)currentCheckersState->at(i,j) << std::endl;
+        std::cout << "Clicked at " << (int)i << " " << (int)j << " = "<< (int)currentState->at(i,j) << std::endl;
 
         if(!isSecondClick) firstClick(i, j);
         else secondClick(i, j);
@@ -559,18 +556,18 @@ void CheckersGame::setClicked(int i, int j)
 
 void CheckersGame::firstClick(int i, int j)
 {
-    if( (humanColor == currentCheckersState->getFigureColor(i,j)))
+    if( (humanColor == currentState->getFigureColor(i,j)))
     {
         std::vector < Point > possibleMovesVectorTMP;
-		std::cout << "Click 0" << "\n"; std::cout.flush();
-        firstSecondsClickPoint.x = i; firstSecondsClickPoint.y = j; firstSecondsClickPoint.type = MOVEDFROM;
-        for(unsigned ii=0; ii< currentCheckersState->childStatesVector.size(); ii++ )
+        std::cout << "Click 1" << "\n"; std::cout.flush();
+        clickPointCoordinates.x = i; clickPointCoordinates.y = j; clickPointCoordinates.type = MOVEDFROM;
+        for(unsigned ii=0; ii< currentState->nextPossibleStates.size(); ii++ )
         {
-            if( currentCheckersState->childStatesVector.at(ii)->getXMove().at(0) == firstSecondsClickPoint )
+            if( currentState->nextPossibleStates.at(ii)->getMovePath().at(0) == clickPointCoordinates )
             {
-                for( unsigned jj=0; jj<currentCheckersState->childStatesVector.at(ii)->getXMove().size(); jj++ )
+                for( unsigned jj=0; jj<currentState->nextPossibleStates.at(ii)->getMovePath().size(); jj++ )
                 {
-                    possibleMovesVectorTMP.push_back( currentCheckersState->childStatesVector.at(ii)->getXMove().at(jj) );
+                    possibleMovesVectorTMP.push_back( currentState->nextPossibleStates.at(ii)->getMovePath().at(jj) );
 				}
 			}
 		}
@@ -585,12 +582,12 @@ void CheckersGame::firstClick(int i, int j)
 
 void CheckersGame::secondClick(int i, int j)
 {
-	std::cout << "Click 1" << "\n"; std::cout.flush();
+    std::cout << "Click 2" << "\n"; std::cout.flush();
 	bool move = false;
-    if ( (firstSecondsClickPoint.x == i && firstSecondsClickPoint.y == j) ) return;
+    if ( (clickPointCoordinates.x == i && clickPointCoordinates.y == j) ) return;
 
-    if( currentCheckersState->isNull(i,j) )
-        move = this->makeMove( firstSecondsClickPoint , Point(i,j,MOVEDTO) );
+    if( currentState->isNull(i,j) )
+        move = this->makeMove( clickPointCoordinates , Point(i,j,MOVEDTO) );
     if( !move )
     {
         isSecondClick = false;
@@ -605,23 +602,23 @@ void CheckersGame::secondClick(int i, int j)
 
 bool CheckersGame::makeMove(Point p1, Point p2)
 {
-    for(unsigned i=0; i< currentCheckersState->childStatesVector.size(); i++ )
+    for(unsigned i=0; i< currentState->nextPossibleStates.size(); i++ )
     {
-        if( currentCheckersState->childStatesVector.at(i)->getXMove().front() == p1 &&
-            currentCheckersState->childStatesVector.at(i)->getXMove().back().x == p2.x &&
-            currentCheckersState->childStatesVector.at(i)->getXMove().back().y == p2.y )
+        if( currentState->nextPossibleStates.at(i)->getMovePath().front() == p1 &&
+            currentState->nextPossibleStates.at(i)->getMovePath().back().x == p2.x &&
+            currentState->nextPossibleStates.at(i)->getMovePath().back().y == p2.y )
 		{
 
             std::cout << "Move ok!\n"; std::cout.flush();
-            CheckersState * tmpstate = currentCheckersState->childStatesVector.at(i);
-            currentCheckersState->childStatesVector.erase(currentCheckersState->childStatesVector.begin()+i);
+            CheckersState * tmpstate = currentState->nextPossibleStates.at(i);
+            currentState->nextPossibleStates.erase(currentState->nextPossibleStates.begin()+i);
 
-            clearTree(currentCheckersState,true);
+            clearTree(currentState,true);
 			clearTree(tmpstate,true,true);
 
-            currentCheckersState = tmpstate;
+            currentState = tmpstate;
 
-            emit stateChanged(currentCheckersState);
+            emit stateChanged(currentState);
 
 			return true;
 		}

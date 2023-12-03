@@ -48,11 +48,11 @@ private:
 
 
 
-    std::vector <CheckersState *> moveSearch;
-    Point firstSecondsClickPoint;
+    std::vector <CheckersState *> possibleNextStates;
+    Point clickPointCoordinates;
 
-    CheckersState * firstCheckersState;
-    CheckersState * currentCheckersState;
+    CheckersState * firstState;
+    CheckersState * currentState;
 
     int squaresCountOnDiagonal;
     int checkersRowsCount;

@@ -30,8 +30,7 @@ void CheckersState::allocateMemory(uint8 squaresCountByDiagonal)
         data[i] = new uint8[squaresCountByDiagonalTMP/2];
         memset( data[i], 0, squaresCountByDiagonalTMP/2*sizeof(uint8) );
 	}
-    parent = NULL;
-    deletedMove = 0;
+    deletedFiguresCount = 0;
 }
 
 uint8 CheckersState::getSquaresCountByDiagonal()
@@ -73,42 +72,37 @@ CheckersState * CheckersState::generateNextState(std::vector <Point> & v)
                 state->at(i,j) = BLACKQUEEN;
         }
 	}
-    state->setXMove(v);
+    state->setMovePath(v);
     state->figuresCount.clear();
 	return state;
 }
 
-void CheckersState::setParent(CheckersState * parent)
+std::vector < Point > & CheckersState::getMovePath()
 {
-    this->parent = parent;
+    return movePath;
 }
-
-std::vector < Point > & CheckersState::getXMove()
+void CheckersState::setMovePath(std::vector < Point > xMove)
 {
-    return xMove;
-}
-void CheckersState::setXMove(std::vector < Point > xMove)
-{
-    this->xMove = xMove;
+    this->movePath = xMove;
 }
 
 
-int & CheckersState::getXScore()
+int & CheckersState::getMoveEvaluationScore()
 {
-    return xScore;
+    return moveEvaluationScore;
 }
-void CheckersState::setXScore(int xScore)
+void CheckersState::setMoveEvaluationScore(int xScore)
 {
-    this->xScore = xScore;
+    this->moveEvaluationScore = xScore;
 }
 
-int & CheckersState::getDeletedMove()
+int & CheckersState::getDeletedFiguresCount()
 {
-    return deletedMove;
+    return deletedFiguresCount;
 }
-void CheckersState::setDeletedMove(int deletedMove)
+void CheckersState::setDeletedFiguresCount(int deletedMove)
 {
-    this->deletedMove = deletedMove;
+    this->deletedFiguresCount = deletedMove;
 }
 
 

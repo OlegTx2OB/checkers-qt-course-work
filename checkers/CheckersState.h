@@ -50,7 +50,6 @@ public:
 
     CheckersState * generateNextState(std::vector <Point> & v);
 
-    uint8 getSquaresCountByDiagonal();
     uint8 & at(uint8 i, uint8 j);
     uint8 getFigureColor(uint i, uint j);
     void allocateMemory(uint8 getSquaresCountByDiagonal);
@@ -60,27 +59,25 @@ public:
 
 
 //getters-setters
-    int & getXScore();
-    int & getDeletedMove();
-    std::vector < Point > & getXMove();
+    uint8 getSquaresCountByDiagonal();
+    int & getMoveEvaluationScore();
+    int & getDeletedFiguresCount();
+    std::vector < Point > & getMovePath();
 
-    void setXScore(int xScore);
-    void setDeletedMove(int deletedMove);
-    void setXMove(std::vector < Point > xMove);
-    void setParent(CheckersState * parent);
-
+    void setMoveEvaluationScore(int moveEvaluationScore);
+    void setDeletedFiguresCount(int deletedFiguresCount);
+    void setMovePath(std::vector < Point > movePath);
 
 public:
     std::vector < uint8 > figuresCount;
-    std::vector < CheckersState * > childStatesVector;
+    std::vector < CheckersState * > nextPossibleStates;
 
 private:
-    CheckersState * parent;
-    std::vector < Point > xMove;
+    std::vector < Point > movePath;
     uint8 ** data;
     uint8 squaresCountByDiagonalTMP;
-    int deletedMove;
-    int xScore;
+    int deletedFiguresCount;
+    int moveEvaluationScore;
 
     //because of stupid spp this variable is used
     uint8 tmp;
