@@ -2,22 +2,25 @@
 
 CheckersPicture::CheckersPicture(QWidget *parent) : QWidget(parent)
 {
-	QPalette palette;
+    QPalette palette;
     palette.setColor(QPalette::Light, QColor(39, 62, 58));
-	setPalette(palette);
-	setBackgroundRole(QPalette::Light);
-	setAutoFillBackground(true);
+    setPalette(palette);
+    setBackgroundRole(QPalette::Light);
+    setAutoFillBackground(true);
 
-	setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-	setAttribute(Qt::WA_StaticContents);
+    setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    setAttribute(Qt::WA_StaticContents);
 
     displayScale = 32;
     currState = NULL;
-	n = 10;
+    n = 2;
     setMinimumSize(displayScale * n,displayScale * n);
 }
 
-CheckersPicture::~CheckersPicture() {}
+CheckersPicture::~CheckersPicture()
+{
+
+}
 
 void CheckersPicture::setComputerColor(uint8 color)
 {
@@ -31,25 +34,24 @@ void CheckersPicture::setState(CheckersState * state)
         currState = state;
         n = state->getSquaresCountByDiagonal();
         possibleMovesVector.clear();
-		update();
+        update();
     }
-    else clear();
+    else
+    {
+        clear();
+    }
 }
 
-void CheckersPicture::deletePossibleMovesVector()
-{
-    if(possibleMovesVector.size())
-    {
-       possibleMovesVector.clear();
-        update();
-	}
+void CheckersPicture::setVector(std::vector <Point> & v) {
+    this->possibleMovesVector = v;
+    update();
 }
 
 void CheckersPicture::clear()
 {
     currState = NULL;
     possibleMovesVector.clear();
-	update();
+    update();
 }
 
 void CheckersPicture::mousePressEvent(QMouseEvent *event)
@@ -60,10 +62,10 @@ void CheckersPicture::mousePressEvent(QMouseEvent *event)
         qreal i = (event->pos().x() - qPoint.x() + boardSizeInPixels/(2*n+2))*(n+1)/boardSizeInPixels - 1.0;
         qreal j = (double)n - (event->pos().y() - qPoint.y() + boardSizeInPixels/(2*n+2))*(n+1)/boardSizeInPixels;
         if(computerColor==BLACK)
-			emit mouseClicked((int)i,(int)j);
-		else
-			emit mouseClicked(n -1 - (int)i, n - 1 - (int)j);
-	}
+            emit mouseClicked((int)i,(int)j);
+        else
+            emit mouseClicked(n -1 - (int)i, n - 1 - (int)j);
+    }
 }
 
 void CheckersPicture::displayBorder(QPainter & painter)
@@ -89,15 +91,38 @@ void CheckersPicture::displayBoard(QPainter & painter)
         }
     }
 }
-
-
-void CheckersPicture::displayFigures(QPainter &painter)
+void CheckersPicture::displayActiveBoardSquares(QPainter& painter)
 {
     int xCoordinate;
     int yCoordinate;
-
-
-
+    QColor endColor(100,100,100);
+    QColor startColor(0x33,0xff,0x00);
+    QColor capturedColor(0xff,0x33,0x33);
+    QColor normalColor(0x4c,0x4c,0xcc);
+    if(possibleMovesVector.size())
+    {
+        int type;
+        for(unsigned i=0; i< possibleMovesVector.size(); i++)
+        {
+            computerColor==WHITE ? yCoordinate = n-1-possibleMovesVector.at(i).y : yCoordinate = possibleMovesVector.at(i).y;
+            computerColor==WHITE ? xCoordinate = n-1-possibleMovesVector.at(i).x : xCoordinate = possibleMovesVector.at(i).x;
+            QRect rect = pixelRect(xCoordinate, yCoordinate);
+            type = possibleMovesVector.at(i).type;
+            if(type == MOVEDFROM)
+                painter.fillRect(rect, startColor);
+            else if(type == MOVEDTO || type == TOQUEEN)
+                painter.fillRect(rect, endColor);
+            else if(type == MOVEDTHROUGH)
+                painter.fillRect(rect, normalColor);
+            else if(type == DELETED)
+                painter.fillRect(rect, capturedColor);
+        }
+    }
+}
+void CheckersPicture::displayFigures(QPainter& painter)
+{
+    int xCoordinate;
+    int yCoordinate;
     int s = displayScale*0.4;
     int sd = displayScale*0.2;
     if(currState) {
@@ -138,43 +163,12 @@ void CheckersPicture::displayFigures(QPainter &painter)
         }
     }
 }
-void CheckersPicture::displayActiveBoardSquares(QPainter& painter)
-{
-    int xCoordinate;
-    int yCoordinate;
-
-    QColor endColor(100,100,100);
-    QColor startColor(0x33,0xff,0x00);
-    QColor capturedColor(0xff,0x33,0x33);
-    QColor normalColor(0x4c,0x4c,0xcc);
-
-    if(true)
-    {
-        int type;
-        for(unsigned i=0; i< possibleMovesVector.size(); i++)
-        {
-            computerColor == WHITE ? yCoordinate = n-1-possibleMovesVector.at(i).y : yCoordinate = possibleMovesVector.at(i).y;
-            computerColor == WHITE ? xCoordinate = n-1-possibleMovesVector.at(i).x : xCoordinate = possibleMovesVector.at(i).x;
-
-            QRect rect = pixelRect(xCoordinate, yCoordinate);
-            type = possibleMovesVector.at(i).type;
-            if(type == MOVEDFROM)
-                painter.fillRect(rect, startColor);
-            else if(type == MOVEDTO || type == TOQUEEN)
-                painter.fillRect(rect, endColor);
-            else if(type == MOVEDTHROUGH)
-                painter.fillRect(rect, normalColor);
-            else if(type == DELETED)
-                painter.fillRect(rect, capturedColor);
-        }
-    }
-}
 
 void CheckersPicture::paintEvent(QPaintEvent *event)
 {
-	qDebug() << "CheckersPicture::paintEvent()";
+    qDebug() << "CheckersPicture::paintEvent()";
 
-	QPainter painter(this);
+    QPainter painter(this);
 
     //Antialiasing true
     painter.setRenderHint(QPainter::Antialiasing, true);
@@ -182,13 +176,11 @@ void CheckersPicture::paintEvent(QPaintEvent *event)
     painter.setViewport(qPoint.x(),qPoint.y(),boardSizeInPixels,boardSizeInPixels);
     painter.setWindow(0, 0, displayScale*(n+1.0), displayScale*(n+1.0));
 
-
-
     displayBorder(painter);
     displayBoard(painter);
-
     displayActiveBoardSquares(painter);
     displayFigures(painter);
+
 
 }
 

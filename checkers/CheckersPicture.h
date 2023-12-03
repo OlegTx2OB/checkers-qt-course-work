@@ -9,32 +9,32 @@
 
 class CheckersPicture : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
     CheckersPicture(QWidget * parent = 0);
-	~CheckersPicture();
+    ~CheckersPicture();
     void setComputerColor(uint8 computerColor);
 
 public slots:
-	void setState(CheckersState *state);
-    void deletePossibleMovesVector();
-	void clear();
+    void setState(CheckersState *state);
+    void setVector(std::vector <Point> & possibleMovesVector);
+    void clear();
 signals:
-	void mouseClicked(int, int);
+    void mouseClicked(int, int);
 
 protected:
-	void mousePressEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent *event);
     void paintEvent(QPaintEvent *event);
-	void resizeEvent (QResizeEvent * event);
+    void resizeEvent (QResizeEvent * event);
 
     void displayBorder(QPainter& painter);
     void displayBoard(QPainter& painter);
-    void displayActiveBoardSquares(QPainter & painter);
-    void displayFigures(QPainter & painter);
+    void displayActiveBoardSquares(QPainter& painter);
+    void displayFigures(QPainter& painter);
 
 
 private:
-	QRect pixelRect(int i, int j) const;
+    QRect pixelRect(int i, int j) const;
 
     CheckersState * currState;
     std::vector <Point> possibleMovesVector;
@@ -42,6 +42,7 @@ private:
     int boardSizeInPixels;
     int displayScale;
     //squaresCountByDiagonal (but this name is too much big)
+
     int n;
     int computerColor;
 };

@@ -11,7 +11,7 @@ CheckersState::CheckersState(const CheckersState *source)
     for(int i = 0; i < squaresCountByDiagonalTMP; i++)
         for(int j = 0; j < squaresCountByDiagonalTMP / 2; j++)
             data[i][j] = source->data[i][j];
-    checkersCount = source->checkersCount;
+    figuresCount = source->figuresCount;
 }
 
 CheckersState::~CheckersState()
@@ -74,7 +74,7 @@ CheckersState * CheckersState::generateNextState(std::vector <Point> & v)
         }
 	}
     state->setXMove(v);
-    state->checkersCount.clear();
+    state->figuresCount.clear();
 	return state;
 }
 

@@ -71,8 +71,8 @@ public:
 
 
 public:
-    std::vector < uint8 > checkersCount;
-    std::vector < CheckersState * > xChildVector;
+    std::vector < uint8 > figuresCount;
+    std::vector < CheckersState * > childStatesVector;
 
 private:
     CheckersState * parent;
