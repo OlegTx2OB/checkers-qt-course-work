@@ -70,7 +70,7 @@ public:
 
 public:
     std::vector < uint8 > figuresCount;
-    std::vector < CheckersState * > nextPossibleStates;
+    std::vector < CheckersState * > nextPossibleStatesCState;
 
 private:
     std::vector < Point > movePath;

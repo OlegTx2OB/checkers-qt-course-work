@@ -46,7 +46,7 @@ private:
 	void clearTreeRecursive(CheckersState * state, bool clearlists = false);
     bool makeMove(Point p1, Point p2);
 
-    std::vector <CheckersState *> possibleNextStates;
+    std::vector <CheckersState *> possibleNextStatesCGame;
     Point clickPointCoordinates;
 
     CheckersState * state;

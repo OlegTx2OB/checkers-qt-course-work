@@ -25,15 +25,13 @@ signals:
 protected:
     void mousePressEvent(QMouseEvent *event);
     void paintEvent(QPaintEvent *event);
-    void resizeEvent (QResizeEvent * event);
-
+    void resizeEvent(QResizeEvent * event);
+private:
     void displayBorder(QPainter& painter);
     void displayBoard(QPainter& painter);
     void displayActiveBoardSquares(QPainter& painter);
     void displayFigures(QPainter& painter);
 
-
-private:
     QRect pixelRect(int i, int j) const;
 
     CheckersState * currState;
